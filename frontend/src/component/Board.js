@@ -77,9 +77,10 @@ const Board = () => {
               role="img"
               aria-label="Rocket emoji"
             >
-              🚀
+              🎈
             </span>
           )}
+          <div className="last-updated">{issue.fields.updated.substring(0,10)}</div>
         </div>
         {!isIssueDone(issue) && (
           <div
