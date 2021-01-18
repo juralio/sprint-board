@@ -11,6 +11,7 @@ import { getCurrentSprint } from "../service/issue-service.js";
 import { RotateLoader } from "react-spinners";
 import classNames from "classnames";
 import { wasCompletedOnLastWorkingDay } from "../helper/issue-helper.js";
+import { now } from "moment";
 
 const useStyles = makeStyles({
   root: {
@@ -92,6 +93,7 @@ const YesterdayTodayBlockersBoard = () => {
   const classes = useStyles();
   const [issues, setIssues] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [dayOfTheWeek, setDayOfTheWeek] = useState("yesterday");
 
   const [assignees, setAssignees] = useState([]);
   const [assigneesIndex, setAssigneesIndex] = useState(0);
@@ -242,10 +244,19 @@ const YesterdayTodayBlockersBoard = () => {
     return aAssignee.displayName.localeCompare(bAssignee.displayName);
   };
 
+  const MONDAY = 1;
+
   const isWithinADayAgo = (timestamp) => {
     let aDate = Date.parse(timestamp);
     let aDayAgo = new Date();
-    aDayAgo.setDate(aDayAgo.getDate() - 1);
+    console.log("now", aDayAgo);
+    if (aDayAgo.getDay() === MONDAY) {
+      if (dayOfTheWeek !== "before the weekend")
+        setDayOfTheWeek("before the weekend");
+      aDayAgo.setDate(aDayAgo.getDate() - 3);
+    } else {
+      aDayAgo.setDate(aDayAgo.getDate() - 1);
+    }
     return aDate > aDayAgo;
   };
 
@@ -331,7 +342,7 @@ const YesterdayTodayBlockersBoard = () => {
               }}
             >
               <Typography variant="h4" className={classes.text}>
-                What did you do yesterday?
+                What did you do {dayOfTheWeek}?
               </Typography>
             </Card>
             <ul className="issue-list">{renderDoneIssues()}</ul>
