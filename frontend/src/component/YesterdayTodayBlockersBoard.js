@@ -249,7 +249,6 @@ const YesterdayTodayBlockersBoard = () => {
   const isWithinADayAgo = (timestamp) => {
     let aDate = Date.parse(timestamp);
     let aDayAgo = new Date();
-    console.log("now", aDayAgo);
     if (aDayAgo.getDay() === MONDAY) {
       if (dayOfTheWeek !== "before the weekend")
         setDayOfTheWeek("before the weekend");
@@ -311,6 +310,13 @@ const YesterdayTodayBlockersBoard = () => {
     <ThemeProvider theme={theme}>
       <div className={classes.root}>
         <div className={classes.header}>
+          <Typography variant="h5" className={classes.text}>
+            {
+              assignees[
+                assigneesIndex > 0 ? assigneesIndex - 1 : assignees.length - 1
+              ]
+            }
+          </Typography>
           <Button
             className={classes.button}
             variant="contained"
@@ -331,6 +337,13 @@ const YesterdayTodayBlockersBoard = () => {
           >
             Next
           </Button>
+          <Typography variant="h5" className={classes.text}>
+            {
+              assignees[
+                assigneesIndex < assignees.length - 1 ? assigneesIndex + 1 : 0
+              ]
+            }
+          </Typography>
         </div>
         <div className={classes.content}>
           <div className={classes.cardContainer}>
