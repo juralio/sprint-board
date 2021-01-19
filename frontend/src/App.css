@@ -107,3 +107,11 @@ ul.issue-list li {
 h4 {
   margin: 4px 0 4px 0;
 }
+
+.last-updated {
+  float: right;
+  flex-grow: 40;
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 10px;
+}
