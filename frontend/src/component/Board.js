@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { getCurrentSprint } from "../service/issue-service.js";
+import React from "react";
 import { RotateLoader } from "react-spinners";
 import classNames from "classnames";
 import { wasCompletedOnLastWorkingDay } from "../helper/issue-helper.js";
 
 const issueStati = ["Open", "In Progress", "Done", "Resolved"];
-const completedIssueStatiStartIndex = 2;
 const taskStati = ["Open", "In Progress", "Code Review", "Done"];
 
 const issueStatiClasses = {
@@ -15,38 +13,15 @@ const issueStatiClasses = {
   [issueStati[3]]: "done",
 };
 
-const scrollToCompletedOrInProgressItems = () => {
-  setTimeout(() => {
-    const completeItem = document.querySelector(".latest-complete");
-    completeItem && completeItem.scrollIntoView(true);
-
-    if (!completeItem) {
-      const inProgressItem = document.querySelector(".in-progress");
-      inProgressItem && inProgressItem.scrollIntoView(true);
-    }
-  });
-};
-
-const Board = () => {
-  const [issues, setIssues] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const renderSubTasksForStatus = (subtasks, status) => (
-    <div key={status} className="sub-task-column">
-      {subtasks
-        .filter(
-          (subtask) =>
-            subtask.fields.status.name.toLowerCase() === status.toLowerCase()
-        )
-        .map((subtask) => (
-          <div key={subtask.key} className="sub-task-container">
-            {subtask.fields.summary}
-          </div>
-        ))}
-    </div>
-  );
-
-  const isIssueDone = (issue) => issue.fields.status.name === "Done";
+const Board = (props) => {
+  const {
+    isIssueDone,
+    renderSubTasksForStatus,
+    issues,
+    sortCompletedIssuesFirst,
+    sortByResolutionDateAscending,
+    isLoading,
+  } = props;
 
   const renderIssueContent = (issue) => {
     const isNewlyCompleted = wasCompletedOnLastWorkingDay(issue);
@@ -80,7 +55,9 @@ const Board = () => {
               🎈
             </span>
           )}
-          <div className="last-updated">{issue.fields.updated.substring(0,10)}</div>
+          <div className="last-updated">
+            {issue.fields.updated.substring(0, 10)}
+          </div>
         </div>
         {!isIssueDone(issue) && (
           <div
@@ -98,37 +75,6 @@ const Board = () => {
     );
   };
 
-  const sortCompletedIssuesFirst = (a, b) => {
-    const aStatusIndex = issueStati.indexOf(a.fields.status.name);
-    const bStatusIndex = issueStati.indexOf(b.fields.status.name);
-
-    if (
-      aStatusIndex >= completedIssueStatiStartIndex &&
-      bStatusIndex < completedIssueStatiStartIndex
-    ) {
-      return -1;
-    } else if (
-      bStatusIndex >= completedIssueStatiStartIndex &&
-      aStatusIndex < completedIssueStatiStartIndex
-    ) {
-      return 1;
-    }
-    return 0;
-  };
-
-  const sortByResolutionDateAscending = (a, b) => {
-    const aDateUnParsed = a.fields.resolutiondate;
-    const bDateUnParsed = b.fields.resolutiondate;
-
-    if (!aDateUnParsed || !bDateUnParsed) {
-      return 0;
-    }
-
-    var dateA = new Date(a.fields.resolutiondate),
-      dateB = new Date(b.fields.resolutiondate);
-    return dateA - dateB;
-  };
-
   const renderIssues = () => {
     return issues
       .filter((issue) => issue.fields.issuetype.name !== "Sub-task")
@@ -136,17 +82,6 @@ const Board = () => {
       .sort(sortByResolutionDateAscending)
       .map((issue) => <li key={issue.id}>{renderIssueContent(issue)}</li>);
   };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      const activeSprint = await getCurrentSprint();
-      setIssues(activeSprint.issues);
-      setIsLoading(false);
-      scrollToCompletedOrInProgressItems();
-    };
-    fetchData();
-  }, []);
 
   return (
     <div>

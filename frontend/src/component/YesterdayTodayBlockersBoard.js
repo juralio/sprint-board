@@ -7,11 +7,8 @@ import {
   createMuiTheme,
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/styles";
-import { getCurrentSprint } from "../service/issue-service.js";
-import { RotateLoader } from "react-spinners";
 import classNames from "classnames";
 import { wasCompletedOnLastWorkingDay } from "../helper/issue-helper.js";
-import { now } from "moment";
 
 const useStyles = makeStyles({
   root: {
@@ -77,22 +74,9 @@ const issueStatiClasses = {
   [issueStati[3]]: "done",
 };
 
-const scrollToCompletedOrInProgressItems = () => {
-  setTimeout(() => {
-    const completeItem = document.querySelector(".latest-complete");
-    completeItem && completeItem.scrollIntoView(true);
-
-    if (!completeItem) {
-      const inProgressItem = document.querySelector(".in-progress");
-      inProgressItem && inProgressItem.scrollIntoView(true);
-    }
-  });
-};
-
-const YesterdayTodayBlockersBoard = () => {
+const YesterdayTodayBlockersBoard = (props) => {
+  const { issues } = props;
   const classes = useStyles();
-  const [issues, setIssues] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [dayOfTheWeek, setDayOfTheWeek] = useState("yesterday");
 
   const [assignees, setAssignees] = useState([]);
@@ -222,19 +206,6 @@ const YesterdayTodayBlockersBoard = () => {
     return 0;
   };
 
-  const sortByResolutionDateAscending = (a, b) => {
-    const aDateUnParsed = a.fields.resolutiondate;
-    const bDateUnParsed = b.fields.resolutiondate;
-
-    if (!aDateUnParsed || !bDateUnParsed) {
-      return 0;
-    }
-
-    var dateA = new Date(a.fields.resolutiondate),
-      dateB = new Date(b.fields.resolutiondate);
-    return dateA - dateB;
-  };
-
   const sortByAssignee = (a, b) => {
     const aAssignee = a.fields.assignee;
     const bAssignee = b.fields.assignee;
@@ -265,7 +236,7 @@ const YesterdayTodayBlockersBoard = () => {
         (issue) =>
           issue.fields.issuetype.name !== "Sub-task" &&
           issue.fields.assignee &&
-          issue.fields.assignee.displayName == assignees[assigneesIndex] &&
+          issue.fields.assignee.displayName === assignees[assigneesIndex] &&
           isWithinADayAgo(issue.fields.updated) &&
           issue.fields.status.name === "Done"
       )
@@ -284,7 +255,7 @@ const YesterdayTodayBlockersBoard = () => {
         (issue) =>
           issue.fields.issuetype.name !== "Sub-task" &&
           issue.fields.assignee &&
-          issue.fields.assignee.displayName == assignees[assigneesIndex] &&
+          issue.fields.assignee.displayName === assignees[assigneesIndex] &&
           issue.fields.status.name === "In Progress"
       )
       .sort(sortCompletedIssuesFirst)
@@ -294,17 +265,6 @@ const YesterdayTodayBlockersBoard = () => {
         return <li key={issue.id}>{renderIssueContent(issue)}</li>;
       });
   };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      const activeSprint = await getCurrentSprint();
-      setIssues(activeSprint.issues);
-      setIsLoading(false);
-      scrollToCompletedOrInProgressItems();
-    };
-    fetchData();
-  }, []);
 
   return (
     <ThemeProvider theme={theme}>
